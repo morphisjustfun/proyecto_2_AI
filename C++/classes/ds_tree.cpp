@@ -3,6 +3,8 @@
 #include <utility>
 
 DSTree::DSTree(const Dataframe &df, std::string label, split split_type) {
+    this->left = nullptr;
+    this->right = nullptr;
     this->construct_ds_tree(df, std::move(label), split_type);
 }
 
@@ -11,8 +13,8 @@ void DSTree::construct_ds_tree(Dataframe df, std::string label_name, split split
     auto unique_label_values = count_unique(label_values);
     if (unique_label_values == 1) {
         this->value = 0;
-        this->left = nullptr;
-        this->right = nullptr;
+        this->left = std::shared_ptr<DSTree>(nullptr);
+        this->right = std::shared_ptr<DSTree>(nullptr);
         this->feature = "";
         this->leaf = true;
         this->label = label_values[0];
@@ -48,10 +50,12 @@ void DSTree::construct_ds_tree(Dataframe df, std::string label_name, split split
     this->label = -1;
 
     if (!left_df.series.empty()) {
-        this->left = new DSTree(left_df, label_name, split_type);
+//        this->left = new DSTree(left_df, label_name, split_type);
+        this->left = std::make_shared<DSTree>(left_df, label_name, split_type);
     }
     if (!right_df.series.empty()) {
-        this->right = new DSTree(right_df, label_name, split_type);
+//        this->right = new DSTree(right_df, label_name, split_type);
+        this->right = std::make_shared<DSTree>(right_df, label_name, split_type);
     }
 }
 
@@ -112,7 +116,9 @@ std::string DSTree::select_feature(const Dataframe &df, const std::string &label
     return disordered_features[min_index];
 }
 
-double DSTree::get_entropy(const std::string &feature, const Dataframe &df_categorical, const std::vector<int>& label_values, unsigned int total_data, const std::string& label) {
+double
+DSTree::get_entropy(const std::string &feature, const Dataframe &df_categorical, const std::vector<int> &label_values,
+                    unsigned int total_data, const std::string &label) {
 
     auto feature_yes_indexes =
             df_categorical.get_header_column(feature) | std::views::transform([](int v) { return v == 1 ? 1 : 0; });
@@ -200,4 +206,5 @@ bool DSTree::eval_serie(std::vector<int> serie, unsigned int label_index, std::v
     }
     return this->left->eval_serie(serie, label_index, headers);
 }
+
 
