@@ -186,18 +186,18 @@ DSTree::get_entropy(const std::string &feature, const Dataframe &df_categorical,
     return weight_feature_yes * entropy_feature_yes_sum + weight_feature_no * entropy_feature_no_sum;
 }
 
-std::vector<bool> DSTree::eval_df(DSTree ds_tree, Dataframe df, std::string label_name) {
+std::vector<int> DSTree::eval_df(DSTree ds_tree, Dataframe df, std::string label_name) {
     auto label_index = std::find(df.headers.begin(), df.headers.end(), label_name) - df.headers.begin();
-    std::vector<bool> results;
+    std::vector<int> results;
     for (auto const &serie: df.series) {
         results.emplace_back(ds_tree.eval_serie(serie, label_index, df.headers));
     }
     return results;
 }
 
-bool DSTree::eval_serie(std::vector<int> serie, unsigned int label_index, std::vector<std::string> headers) const {
+int DSTree::eval_serie(std::vector<int> serie, unsigned int label_index, std::vector<std::string> headers) const {
     if (this->leaf) {
-        return this->label == serie[label_index];
+        return this->label;
     }
 
     auto feature_index = std::find(headers.begin(), headers.end(), this->feature) - headers.begin();

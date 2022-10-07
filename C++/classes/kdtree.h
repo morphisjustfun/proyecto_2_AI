@@ -8,22 +8,21 @@
 #include "../utils/cfunctions.h"
 #include "dataframe.h"
 
-template<typename T, typename U>
 class KDTree {
 private:
-    using Point = std::vector<T>;
+    using Point = std::vector<float>;
 
     struct Node {
-        std::vector<T> point;
+        std::vector<float> point;
         std::shared_ptr<Node> left;
         std::shared_ptr<Node> right;
-        U label;
+        int label;
         bool infinite = false;
 
         double get_point_distance(const Point &other) const {
             if (infinite)
                 return std::numeric_limits<double>::infinity();
-            return get_distance<T>(point, other, euclidean);
+            return get_distance<float>(point, other, euclidean);
         }
     };
 
@@ -34,15 +33,15 @@ private:
     NodePtr root;
     size_t dim;
 
-    void insert(std::vector<std::pair<Point, U>> &points, const size_t from, const size_t to,
+    void insert(std::vector<std::pair<Point, int>> &points, const size_t from, const size_t to,
                 NodePtr &current,
                 const size_t depth) {
         if (from == to) return;
         const size_t axis = depth % this->dim;
         const size_t median = (from + to) / 2;
         std::sort(points.begin() + from, points.begin() + to,
-                  [axis](std::pair<Point, U> const &a,
-                         std::pair<Point, U> const &b) { return a.first[axis] < b.first[axis]; });
+                  [axis](std::pair<Point, int> const &a,
+                         std::pair<Point, int> const &b) { return a.first[axis] < b.first[axis]; });
         current = std::make_shared<Node>(points[median].first, nullptr, nullptr, points[median].second, false);
         insert(points, from, median, current->left, depth + 1);
         insert(points, median + 1, to, current->right, depth + 1);
@@ -53,7 +52,7 @@ public:
         auto data = df.series;
         auto label_index = std::find(df.headers.begin(), df.headers.end(), label) - df.headers.begin();
 
-        std::vector<std::pair<Point, U>> data_processed;
+        std::vector<std::pair<Point, int>> data_processed;
         for (auto row: data) {
             Point point;
             for (size_t i = 0; i < row.size(); i++) {
@@ -67,10 +66,11 @@ public:
         insert(data_processed, 0, data_processed.size(), root, 0);
     }
 
-    static std::vector<bool> eval_df(const KDTree &root, Dataframe df, std::string label, const size_t& k) {
+    static std::vector<int> eval_df(const KDTree &root, Dataframe df, const std::string &label, const size_t &k) {
         auto data = df.series;
         auto label_index = std::find(df.headers.begin(), df.headers.end(), label) - df.headers.begin();
-        std::vector<bool> results;
+
+        std::vector<int> results;
         for (auto row: data) {
             Point point;
             for (size_t i = 0; i < row.size(); i++) {
@@ -80,7 +80,7 @@ public:
             }
             auto knn = root.knn(point, k);
             // get the most common label from knn
-            std::map<U, int> label_count;
+            std::map<int, int> label_count;
             for (auto &node: knn) {
                 if (label_count.find(node->label) == label_count.end()) {
                     label_count[node->label] = 1;
@@ -92,7 +92,7 @@ public:
                       [label_count](NodePtr const &a, NodePtr const &b) {
                           return label_count.at(a->label) > label_count.at(b->label);
                       });
-            results.push_back(knn[0]->label == row[label_index]);
+            results.push_back(knn[0]->label);
         }
         return results;
     }

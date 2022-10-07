@@ -23,7 +23,7 @@ public:
 
     void construct_ds_tree(Dataframe df, std::string label_name, split split_type);
 
-    static std::vector<bool> eval_df(DSTree ds_tree, Dataframe df, std::string label_name);
+    static std::vector<int> eval_df(DSTree ds_tree, Dataframe df, std::string label_name);
 
 private:
     static std::string select_feature(const Dataframe &df, const std::string &label_name, split split_type);
@@ -32,6 +32,6 @@ private:
     get_entropy(const std::string &feature, const Dataframe &df_categorical, const std::vector<int> &label_values,
                 unsigned int total_data, const std::string &label);
 
-    [[nodiscard]] bool
+    [[nodiscard]] int
     eval_serie(std::vector<int> serie, unsigned int label_index, std::vector<std::string> headers) const;
 };
