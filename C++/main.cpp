@@ -4,11 +4,11 @@
 
 
 template<typename T>
-void vector_to_csv(const std::vector<T>& target, const std::string& header, const std::string& filename) {
+void vector_to_csv(const std::vector<T> &target, const std::string &header, const std::string &filename) {
     std::ofstream file;
     file.open(filename);
     file << header << std::endl;
-    for (auto& i : target) {
+    for (auto &i: target) {
         file << i << std::endl;
     }
     file.close();
@@ -22,8 +22,11 @@ int main(int argc, char *argv[]) {
         KDTree tree(df_train, "label");
         auto k_str = std::string(argv[2]);
         auto k_int = std::stoi(k_str);
-        auto test_results = KDTree::eval_df(tree, df_test, "label", k_int);
-        vector_to_csv(test_results, "label", "data/kdtree_results.csv");
+        for (int i = 1; i <= k_int; i++) {
+            auto test_results = KDTree::eval_df(tree, df_test, "label", i);
+            auto filename = "data/kdtree_results_k" + std::to_string(i) + ".csv";
+            vector_to_csv(test_results, "label", filename);
+        }
     } else if (type_str == "ds_tree") {
         auto partition_str = std::string(argv[2]);
         auto split = split::mean;
@@ -37,7 +40,8 @@ int main(int argc, char *argv[]) {
 
         DSTree tree(df_train, "label", split);
         auto test_results = DSTree::eval_df(tree, df_test, "label");
-        vector_to_csv(test_results, "label", "data/ds_tree_results.csv");
+        auto filename = "data/ds_tree_results_" + partition_str + ".csv";
+        vector_to_csv(test_results, "label", filename);
     }
     return 0;
 }
