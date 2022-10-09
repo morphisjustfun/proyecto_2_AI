@@ -44,7 +44,7 @@ def get_scores(method, filename='data/data.csv', label='label', k=4, split='mean
             precision, recall, f1, auc = test_dstree(
                 fold, df_test, label, split, False)
             df_results = df_results.append(
-                {'model': 'svm', 'fold': fold, 'precision': precision,
+                {'model': 'dstree', 'fold': fold, 'precision': precision,
                  'recall': recall, 'f1': f1, 'auc': auc},
                 ignore_index=True)
 
@@ -58,7 +58,7 @@ def get_scores(method, filename='data/data.csv', label='label', k=4, split='mean
             precision, recall, f1, auc = test_svm(
                 fold, df_train, df_test, label, False)
             df_results = df_results.append(
-                {'model': 'dstree', 'fold': fold, 'precision': precision,
+                {'model': 'svm', 'fold': fold, 'precision': precision,
                     'recall': recall, 'f1': f1, 'auc': auc},
                 ignore_index=True)
             fold += 1
@@ -78,7 +78,7 @@ def get_scores(method, filename='data/data.csv', label='label', k=4, split='mean
             precision, recall, f1, auc = test_dstree(
                 fold, df_test, label, split, True)
             df_results = df_results.append(
-                {'model': 'svm', 'fold': fold, 'precision': precision,
+                {'model': 'dstree', 'fold': fold, 'precision': precision,
                  'recall': recall, 'f1': f1, 'auc': auc},
                 ignore_index=True)
 
@@ -92,7 +92,7 @@ def get_scores(method, filename='data/data.csv', label='label', k=4, split='mean
             precision, recall, f1, auc = test_svm(
                 fold, df_train, df_test, label, True)
             df_results = df_results.append(
-                {'model': 'dstree', 'fold': fold, 'precision': precision,
+                {'model': 'svm', 'fold': fold, 'precision': precision,
                     'recall': recall, 'f1': f1, 'auc': auc},
                 ignore_index=True)
 
@@ -279,5 +279,6 @@ def test_svm(fold, df_train, df_test, label, bs):
 
 
 if __name__ == '__main__':
+    np.random.seed(42)
     get_scores('kfold')
     get_scores('bootstrapping')
